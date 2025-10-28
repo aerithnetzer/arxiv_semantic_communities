@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 import typer
-
+import json
 from nihil.config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 app = typer.Typer()
@@ -20,7 +20,7 @@ g = nx.Graph()
 @app.command()
 def unweighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
-    model_path: Path = MODELS_DIR / "model.gml",
+    model_path: Path = MODELS_DIR / "model.pkl",
 ):
     df = pd.read_json(input_path, lines=True, dtype={"id": str})
     logger.info(f"DF Columns: {df.columns}")
@@ -91,6 +91,19 @@ def unweighted_analysis(
         )
 
     fig.write_html(FIGURES_DIR / "unweighted_analysis.html")
+
+    df = pd.DataFrame()
+    rows = []
+    for node, data in g.nodes(data=True):
+        row = df[df["id"] == node].to_dict(orient="records")[0]
+        row["edges"] = list(g.neighbors(node))
+        row["degree"] = g.degree(node)
+        rows.append(row)
+
+    # Write to JSON Lines
+    with open("graph_nodes.jsonl", "w") as f:
+        for row in rows:
+            f.write(json.dumps(row) + "\n")
     with open(model_path, "wb") as f:
         pickle.dump(g, f)
     logger.success("Process finished.")
