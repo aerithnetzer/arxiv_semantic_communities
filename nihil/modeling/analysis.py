@@ -91,7 +91,7 @@ def unweighted_analysis(
         )
 
     fig.write_html(FIGURES_DIR / "unweighted_analysis.html")
-
+    fig.write_image(FIGURES_DIR / "unweighted_analysis.png")
     df = pd.DataFrame()
     rows = []
     for node, data in g.nodes(data=True):
