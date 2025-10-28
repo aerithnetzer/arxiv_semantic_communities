@@ -91,7 +91,8 @@ def unweighted_analysis(
         )
 
     fig.write_html(FIGURES_DIR / "unweighted_analysis.html")
-    nx.write_gml(g, model_path)
+    with open(model_path, "wb") as f:
+        pickle.dump(g, f)
     logger.success("Process finished.")
 
 
