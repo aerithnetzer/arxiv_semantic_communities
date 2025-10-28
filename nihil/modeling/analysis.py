@@ -1,17 +1,25 @@
-import json
 from pathlib import Path
-import pickle
+
 from loguru import logger
 import networkx as nx
+
+print("Imported networkx")
 import numpy as np
+
+print("Imported numpy")
 import pandas as pd
+
+print("Imported pandas")
 import plotly.graph_objects as go
+
+print("Imported plotly")
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 import typer
 
 from nihil.config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
+print("imported values")
 THRESHOLDS = [0.5, 0.6, 0.7, 0.8, 0.9]
 app = typer.Typer()
 
@@ -81,7 +89,6 @@ def unweighted_analysis(
             )
 
         fig.write_html(FIGURES_DIR / f"unweighted_analysis_threshold_{t}.html")
-        fig.write_image(FIGURES_DIR / f"unweighted_analysis_threshold_{t}.png")
 
         logger.success("Process finished.")
 
