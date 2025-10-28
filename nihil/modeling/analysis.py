@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import pickle
 from loguru import logger
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -20,7 +20,7 @@ g = nx.Graph()
 @app.command()
 def unweighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
-    model_path: Path = MODELS_DIR / "model.paj",
+    model_path: Path = MODELS_DIR / "model.gml",
 ):
     df = pd.read_json(input_path, lines=True, dtype={"id": str})
     logger.info(f"DF Columns: {df.columns}")
@@ -91,7 +91,7 @@ def unweighted_analysis(
         )
 
     fig.write_html(FIGURES_DIR / "unweighted_analysis.html")
-    nx.write_pajek(g, model_path)
+    nx.write_gml(g, model_path)
     logger.success("Process finished.")
 
 
