@@ -22,7 +22,7 @@ def unweighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
     model_path: Path = MODELS_DIR / "model.paj",
 ):
-    df = pd.read_json(input_path, lines=True, dtype={"id": str}, nrows=1000)
+    df = pd.read_json(input_path, lines=True, dtype={"id": str})
     logger.info(f"DF Columns: {df.columns}")
     t = 0.5
     embeddings = np.vstack(df["embeddings"].values)
