@@ -20,52 +20,83 @@ g = nx.Graph()
 @app.command()
 def unweighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
-    model_path: Path = MODELS_DIR / "model.pkl",
+    model_path: Path = MODELS_DIR / "model.paj",
 ):
-    df = pd.read_json(input_path, lines=True, dtype={"id": str})
-    t = 0.999
+    df = pd.read_json(input_path, lines=True, dtype={"id": str}, nrows=1000)
+    logger.info(f"DF Columns: {df.columns}")
+    t = 0.5
     embeddings = np.vstack(df["embeddings"].values)
-    for row in df["id"]:
-        g.add_node(row)
+    for _, row in df.iterrows():
+        g.add_node(row["id"], title=row["title"])
     similarity_matrix = cosine_similarity(embeddings)
+
+    # Get upper triangle (excluding diagonal)
+    upper_triangle = similarity_matrix[np.triu_indices_from(similarity_matrix, k=1)]
+
+    # Create Plotly histogram
+    fig = go.Figure(
+        data=[
+            go.Histogram(
+                x=upper_triangle,
+                nbinsx=100,
+                marker=dict(color="steelblue"),
+                opacity=0.8,
+            )
+        ]
+    )
+
+    # Customize layout
+    fig.update_layout(
+        title="Distribution of Off-Diagonal Cosine Similarities",
+        xaxis_title="Cosine Similarity",
+        yaxis_title="Frequency",
+        template="plotly_white",
+    )
+
+    fig.write_html(FIGURES_DIR / "histogram_unweighted.html")
     ids = df["id"].to_numpy()
-    for x, i in tqdm(enumerate(similarity_matrix), total=len(similarity_matrix)):
-        for y, j in enumerate(i):
+
+    for x in tqdm(range(len(similarity_matrix)), total=len(similarity_matrix)):
+        for y in range(x + 1, len(similarity_matrix)):
+            j = similarity_matrix[x][y]
             if j > t:
-                if ids[x] != ids[y] and not g.has_edge(df["id"][x], df["id"][y]):
-                    g.add_edge(df["id"][x], df["id"][y])
+                g.add_edge(ids[x], ids[y])
     logger.info(f"Similarity matrix:\n{similarity_matrix}")
     logger.info(f"First value: {len(similarity_matrix[0])}")
-    logger.success("Process finished.")
     # Generate positions for the nodes
     pos = nx.spring_layout(g)
-
+    logger.success(f"Calculated `pos`")
     # Create a Plotly figure
     fig = go.Figure()
 
     # Add edges to the figure
-    for u, v, data in g.edges(data=True):
+    for u, v, data in tqdm(g.edges(data=True), desc="Adding edges"):
         x0, y0 = pos[u]
         x1, y1 = pos[v]
+        fig.add_trace(go.Scatter(x=[x0, x1], y=[y0, y1], mode="lines", line=dict(color="gray")))
+
+    # Add nodes to the figure
+
+    for node, data in g.nodes(data=True):
+        x, y = pos[node]
         fig.add_trace(
             go.Scatter(
-                x=[x0, x1],
-                y=[y0, y1],
-                mode="lines",
-                line=dict(width=data["weight"] * 5, color="gray"),
+                x=[x],
+                y=[y],
+                mode="markers",
+                marker=dict(size=10),
+                text=data["title"],  # <-- this sets the hover text
+                hoverinfo="text",  # <-- ensures only text is shown
             )
         )
 
-    # Add nodes to the figure
-    for node in g.nodes():
-        x, y = pos[node]
-        fig.add_trace(go.Scatter(x=[x], y=[y], mode="markers", marker=dict(size=10)))
-
     fig.write_html(FIGURES_DIR / "unweighted_analysis.html")
+    nx.write_pajek(g, model_path)
+    logger.success("Process finished.")
 
 
 @app.command()
-def main(
+def weighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
     model_path: Path = MODELS_DIR / "model.pkl",
 ):
@@ -141,7 +172,7 @@ def main(
         ),
     )
 
-    fig.show()
+    fig.write_html(FIGURES_DIR / "weighted_analysis.html")
 
 
 if __name__ == "__main__":
