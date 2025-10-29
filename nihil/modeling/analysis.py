@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 import typer
 
-from ..config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+from nihil.config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 THRESHOLDS = [0.5, 0.6, 0.7, 0.8, 0.9]
 app = typer.Typer()
