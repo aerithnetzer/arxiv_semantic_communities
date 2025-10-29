@@ -12,10 +12,8 @@ import typer
 from nihil.config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
 THRESHOLDS = [0.5, 0.6, 0.7, 0.8, 0.9]
-app = typer.Typer()
 
 
-@app.command()
 def unweighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
     model_path: Path = MODELS_DIR / "model.pkl",
@@ -50,9 +48,7 @@ def unweighted_analysis(
                     g.add_edge(ids[x], ids[y])
 
         logger.success(f"Density of network with threshold {t}: {nx.density(g)}")
-        logger.success(
-            f"Average path length with threshold {t}: {nx.average_clustering(g)}"
-        )
+        logger.success(f"Average path length with threshold {t}: {nx.average_clustering(g)}")
         # Generate positions for the nodes
         pos = nx.spring_layout(g)
         # Create a Plotly figure
@@ -63,9 +59,7 @@ def unweighted_analysis(
             x0, y0 = pos[u]
             x1, y1 = pos[v]
             fig.add_trace(
-                go.Scatter(
-                    x=[x0, x1], y=[y0, y1], mode="lines", line=dict(color="gray")
-                )
+                go.Scatter(x=[x0, x1], y=[y0, y1], mode="lines", line=dict(color="gray"))
             )
 
         # Add nodes to the figure
@@ -88,7 +82,6 @@ def unweighted_analysis(
         logger.success("Process finished.")
 
 
-@app.command()
 def weighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
     model_path: Path = MODELS_DIR / "model.pkl",
@@ -108,9 +101,7 @@ def weighted_analysis(
                 if ids[x] != ids[y] and not g.has_edge(df["id"][x], df["id"][y]):
                     g.add_edge(df["id"][x], df["id"][y], weight=1)
                     g[df["id"][x]][df["id"][y]]["weight"] = 1
-                elif df["id"][x] != df["id"][y] and g.has_edge(
-                    df["id"][x], df["id"][y]
-                ):
+                elif df["id"][x] != df["id"][y] and g.has_edge(df["id"][x], df["id"][y]):
                     g[df["id"][x]][df["id"][y]]["weight"] += 1
                 else:
                     continue
@@ -181,4 +172,4 @@ def weighted_analysis(
 
 
 if __name__ == "__main__":
-    app()
+    unweighted_analysis()
