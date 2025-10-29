@@ -1,27 +1,48 @@
 from pathlib import Path
 
+print("Imported pathlib")
 from loguru import logger
+
+print("Imported loguru")
 import networkx as nx
+
+print("Imported networkx")
 import numpy as np
+
+print("Imported numpy")
 import pandas as pd
+
+print("Imported pandas")
 import plotly.graph_objects as go
+
+print("Imported plotly")
 from sklearn.metrics.pairwise import cosine_similarity
+
+print("Imported sklearn")
 from tqdm import tqdm
-import typer
+
+print("Imported tqdm")
 
 from nihil.config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
+print("Imported nihil")
+
 THRESHOLDS = [0.5, 0.6, 0.7, 0.8, 0.9]
+print("Defined threshold")
 
 
 def unweighted_analysis(
     input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
     model_path: Path = MODELS_DIR / "model.pkl",
 ):
+    print("Starting threshold loop")
     for t in THRESHOLDS:
         g = nx.Graph()
+        print("nx.Graph initialized")
         df = pd.read_json(input_path, lines=True, dtype={"id": str})
+        print("Json file read to dataframe")
         embeddings = np.vstack(df["embeddings"].values)
+        print("embeddings stacked")
         for _, row in df.iterrows():
             g.add_node(row["id"], title=row["title"])
         similarity_matrix = cosine_similarity(embeddings)
