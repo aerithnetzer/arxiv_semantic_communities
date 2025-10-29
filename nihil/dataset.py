@@ -43,7 +43,7 @@ def main(
     output_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
 ):
     logger.info("Processing dataset...")
-    df_in = pd.read_json(input_path, lines=True, dtype={"id": str})
+    df_in = pd.read_json(input_path, lines=True, dtype={"id": str}, nrows=1000)
     logger.info(f"Loaded dataframe of length {len(df_in)}")
     logger.info(f"Columns of dataframe: {df_in.columns}")
 
@@ -58,6 +58,9 @@ def main(
     logger.info("Now extracting sentences")
     df["sentences"] = df_in["abstract"].apply(extract_sentences)
     df_exploded = df.explode("sentences", ignore_index=True)
+    df_exploded = df_exploded[
+        df_exploded["sentences"].apply(lambda x: isinstance(x, str) and len(x.strip()) > 0)
+    ]
     logger.info("Now embedding")
 
     # Encode each sentence
