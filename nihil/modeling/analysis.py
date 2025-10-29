@@ -2,24 +2,15 @@ from pathlib import Path
 
 from loguru import logger
 import networkx as nx
-
-print("Imported networkx")
 import numpy as np
-
-print("Imported numpy")
 import pandas as pd
-
-print("Imported pandas")
 import plotly.graph_objects as go
-
-print("Imported plotly")
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 import typer
 
-from nihil.config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
+from ..config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
 
-print("imported values")
 THRESHOLDS = [0.5, 0.6, 0.7, 0.8, 0.9]
 app = typer.Typer()
 
@@ -59,7 +50,9 @@ def unweighted_analysis(
                     g.add_edge(ids[x], ids[y])
 
         logger.success(f"Density of network with threshold {t}: {nx.density(g)}")
-        logger.success(f"Average path length with threshold {t}: {nx.average_clustering(g)}")
+        logger.success(
+            f"Average path length with threshold {t}: {nx.average_clustering(g)}"
+        )
         # Generate positions for the nodes
         pos = nx.spring_layout(g)
         # Create a Plotly figure
@@ -70,7 +63,9 @@ def unweighted_analysis(
             x0, y0 = pos[u]
             x1, y1 = pos[v]
             fig.add_trace(
-                go.Scatter(x=[x0, x1], y=[y0, y1], mode="lines", line=dict(color="gray"))
+                go.Scatter(
+                    x=[x0, x1], y=[y0, y1], mode="lines", line=dict(color="gray")
+                )
             )
 
         # Add nodes to the figure
@@ -113,7 +108,9 @@ def weighted_analysis(
                 if ids[x] != ids[y] and not g.has_edge(df["id"][x], df["id"][y]):
                     g.add_edge(df["id"][x], df["id"][y], weight=1)
                     g[df["id"][x]][df["id"][y]]["weight"] = 1
-                elif df["id"][x] != df["id"][y] and g.has_edge(df["id"][x], df["id"][y]):
+                elif df["id"][x] != df["id"][y] and g.has_edge(
+                    df["id"][x], df["id"][y]
+                ):
                     g[df["id"][x]][df["id"][y]]["weight"] += 1
                 else:
                     continue
@@ -129,7 +126,11 @@ def weighted_analysis(
         edge_y += [y0, y1, None]
 
     edge_trace = go.Scatter(
-        x=edge_x, y=edge_y, line=dict(width=0.5, color="#888"), hoverinfo="none", mode="lines"
+        x=edge_x,
+        y=edge_y,
+        line=dict(width=0.5, color="#888"),
+        hoverinfo="none",
+        mode="lines",
     )
 
     node_x = []
@@ -140,7 +141,11 @@ def weighted_analysis(
         node_y.append(y)
 
     edge_trace = go.Scatter(
-        x=edge_x, y=edge_y, line=dict(width=0.5, color="#888"), hoverinfo="none", mode="lines"
+        x=edge_x,
+        y=edge_y,
+        line=dict(width=0.5, color="#888"),
+        hoverinfo="none",
+        mode="lines",
     )
 
     node_trace = go.Scatter(
@@ -153,7 +158,10 @@ def weighted_analysis(
             colorscale="YlGnBu",
             size=10,
             colorbar=dict(
-                thickness=15, title="Node Connections", xanchor="left", titleside="right"
+                thickness=15,
+                title="Node Connections",
+                xanchor="left",
+                titleside="right",
             ),
         ),
     )
