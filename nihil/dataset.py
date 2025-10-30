@@ -9,7 +9,6 @@ import typer
 import re
 from nihil.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
-app = typer.Typer()
 tqdm.pandas()
 SENTENCE_TRANSFORMER = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -37,15 +36,15 @@ def embed_sentences(sentences: list) -> np.ndarray:
     return embeddings
 
 
-@app.command()
 def main(
     input_path: Path = RAW_DATA_DIR / "arxiv-metadata-oai-snapshot.json",
     output_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
 ):
     logger.info("Processing dataset...")
-    df_in = pd.read_json(input_path, lines=True, dtype={"id": str}, nrows=1000)
+    df_in = pd.read_json(input_path, lines=True, dtype={"id": str})
     logger.info(f"Loaded dataframe of length {len(df_in)}")
     logger.info(f"Columns of dataframe: {df_in.columns}")
+    print(f"Length of df in: {len(df_in)}")
 
     df = pd.DataFrame()
     df["abstract"] = df_in["abstract"]
@@ -69,13 +68,17 @@ def main(
     )
 
     # Add embeddings as a new column
+    logger.success("Embedded all documents successfully")
+    logger.info("Transforming embeddings to list")
     df_exploded["embeddings"] = embeddings.tolist()
+    logger.success("Transformed all embeddings to list successfully")
+    logger.info("Extracting sentences")
     df_exploded["sentences"] = df_exploded["sentences"].str.strip()
-    counts = df_exploded["sentences"].value_counts()
-    logger.info(counts.head(10))
+    logger.success("Successfully extracted sentences")
+    logger.info(f"Now saving to JSONL at {str(output_path)}")
     # Save as JSONL
     df_exploded.to_json(output_path, orient="records", lines=True)
 
 
 if __name__ == "__main__":
-    app()
+    main()
