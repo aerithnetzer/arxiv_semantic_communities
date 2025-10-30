@@ -49,7 +49,7 @@ def main(
     logger.info("Now extracting sentences")
     df["sentences"] = df_in["abstract"].apply(extract_sentences)
     df_exploded = df.explode("sentences", ignore_index=True)
-    df_exploded = df_exploded[
+    df_exploded["sentences"] = df_exploded[
         df_exploded["sentences"].apply(lambda x: isinstance(x, str) and len(x.strip()) > 0)
     ]
     logger.info("Now embedding")
