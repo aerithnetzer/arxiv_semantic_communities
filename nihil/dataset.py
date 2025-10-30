@@ -28,20 +28,12 @@ def extract_sentences(abstract: str) -> list:
     return sentences
 
 
-def embed_sentences(sentences: list) -> np.ndarray:
-    """
-    Returns an array of embeddings given a list of sentences
-    """
-    embeddings = SENTENCE_TRANSFORMER.encode(sentences)
-    return embeddings
-
-
 def main(
     input_path: Path = RAW_DATA_DIR / "arxiv-metadata-oai-snapshot.json",
     output_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
 ):
     logger.info("Processing dataset...")
-    df_in = pd.read_json(input_path, lines=True, dtype={"id": str})
+    df_in = pd.read_json(input_path, lines=True, dtype={"id": str}, nrows=1000)
     logger.info(f"Loaded dataframe of length {len(df_in)}")
     logger.info(f"Columns of dataframe: {df_in.columns}")
     print(f"Length of df in: {len(df_in)}")
@@ -63,8 +55,8 @@ def main(
     logger.info("Now embedding")
 
     # Encode each sentence
-    embeddings = SENTENCE_TRANSFORMER.encode(
-        df_exploded["sentences"].tolist(), show_progress_bar=True
+    df_exploded["embeddings"] = list(
+        SENTENCE_TRANSFORMER.encode(df_exploded["sentences"].tolist(), show_progress_bar=True)
     )
 
     # Add embeddings as a new column
