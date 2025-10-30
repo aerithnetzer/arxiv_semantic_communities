@@ -59,16 +59,6 @@ def main(
         SENTENCE_TRANSFORMER.encode(df_exploded["sentences"].tolist(), show_progress_bar=True)
     )
 
-    # Add embeddings as a new column
-    logger.success("Embedded all documents successfully")
-    logger.info("Transforming embeddings to list")
-    df_exploded["embeddings"] = embeddings.tolist()
-    logger.success("Transformed all embeddings to list successfully")
-    logger.info("Extracting sentences")
-    df_exploded["sentences"] = df_exploded["sentences"].str.strip()
-    logger.success("Successfully extracted sentences")
-    logger.info(f"Now saving to JSONL at {str(output_path)}")
-    # Save as JSONL
     df_exploded.to_json(output_path, orient="records", lines=True)
 
 
