@@ -1,51 +1,36 @@
+import glob
 from pathlib import Path
+from typing import List
 
-print("Imported pathlib")
 from loguru import logger
-
-print("Imported loguru")
 import networkx as nx
-
-print("Imported networkx")
 import numpy as np
-
-print("Imported numpy")
 import pandas as pd
-
-print("Imported pandas")
 import plotly.graph_objects as go
-
-print("Imported plotly")
 from sklearn.metrics.pairwise import cosine_similarity
-
-print("Imported sklearn")
 from tqdm import tqdm
 
-print("Imported tqdm")
-
 from nihil.config import FIGURES_DIR, MODELS_DIR, PROCESSED_DATA_DIR
-
-print("Imported nihil")
 
 THRESHOLDS = [0.5, 0.6, 0.7, 0.8, 0.9]
 print("Defined threshold")
 
 
 def unweighted_analysis(
-    input_path: Path = PROCESSED_DATA_DIR / "dataset.jsonl",
+    input_paths: List[str] = glob.glob(str(PROCESSED_DATA_DIR / "*.jsonl")),
     model_path: Path = MODELS_DIR / "model.pkl",
 ):
+    df = pd.concat([pd.read_json(f, lines=True, orient="records") for f in input_paths])
+    print("Json file read to dataframe")
     print("Starting threshold loop")
+    embeddings = np.vstack(df["embeddings"].values)
+    similarity_matrix = cosine_similarity(embeddings)
     for t in THRESHOLDS:
         g = nx.Graph()
         print("nx.Graph initialized")
-        df = pd.read_json(input_path, lines=True, dtype={"id": str})
-        print("Json file read to dataframe")
-        embeddings = np.vstack(df["embeddings"].values)
         print("embeddings stacked")
         for _, row in df.iterrows():
             g.add_node(row["id"], title=row["title"])
-        similarity_matrix = cosine_similarity(embeddings)
 
         upper_triangle = similarity_matrix[np.triu_indices_from(similarity_matrix, k=1)]
         # Create Plotly histogram
